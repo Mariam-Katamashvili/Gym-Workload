@@ -11,14 +11,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Month;
+import java.util.Objects;
 
-@Getter
-@Setter
+@Data
 @Entity
 @Builder
 @NoArgsConstructor
@@ -35,4 +34,18 @@ public class Months {
     @JoinColumn(name = "years_id")
     @JsonBackReference
     private Years years;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Months months = (Months) o;
+        return Objects.equals(id, months.id) &&
+                month == months.month;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, month);
+    }
 }

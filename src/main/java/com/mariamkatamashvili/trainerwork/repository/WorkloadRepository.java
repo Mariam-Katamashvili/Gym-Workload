@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TrainersWorkRepository extends JpaRepository<TrainersWork, Long> {
+public interface WorkloadRepository extends JpaRepository<TrainersWork, Long> {
     @EntityGraph(attributePaths = {"years", "years.months"})
     Optional<TrainersWork> findByUsername(String username);
 }

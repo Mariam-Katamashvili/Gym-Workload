@@ -15,9 +15,9 @@ import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -25,11 +25,15 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Years {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
+
     @Column(name = "work_year")
+    @EqualsAndHashCode.Include
     private int year;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,18 +44,4 @@ public class Years {
     @OneToMany(mappedBy = "years", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private Set<Months> months;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Years years = (Years) o;
-        return year == years.year &&
-                Objects.equals(id, years.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, year);
-    }
 }

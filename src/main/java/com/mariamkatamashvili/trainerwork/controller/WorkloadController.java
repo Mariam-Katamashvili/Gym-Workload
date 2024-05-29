@@ -2,7 +2,7 @@ package com.mariamkatamashvili.trainerwork.controller;
 
 import com.mariamkatamashvili.trainerwork.dto.WorkDTO;
 import com.mariamkatamashvili.trainerwork.dto.WorkloadDTO;
-import com.mariamkatamashvili.trainerwork.service.TrainersWorkService;
+import com.mariamkatamashvili.trainerwork.service.WorkloadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/trainings")
+@RequestMapping("/trainers")
 @RequiredArgsConstructor
 @Tag(name = "Workload API", description = "Operations related to calculating and retrieving trainer working hours")
-public class TrainingController {
-    private final TrainersWorkService trainersWorkService;
+public class WorkloadController {
+    private final WorkloadService workloadService;
 
     @Operation(summary = "Add workload to a trainer")
     @ApiResponses(value = {
@@ -36,7 +36,7 @@ public class TrainingController {
     public ResponseEntity<Void> workload(
             @RequestBody WorkloadDTO workload
     ) {
-        trainersWorkService.addWorkload(workload);
+        workloadService.addWorkload(workload);
         return ResponseEntity.ok().build();
     }
 
@@ -49,6 +49,6 @@ public class TrainingController {
     })
     @GetMapping
     public ResponseEntity<List<WorkDTO>> getAll() {
-        return ResponseEntity.ok(trainersWorkService.findAll());
+        return ResponseEntity.ok(workloadService.findAll());
     }
 }

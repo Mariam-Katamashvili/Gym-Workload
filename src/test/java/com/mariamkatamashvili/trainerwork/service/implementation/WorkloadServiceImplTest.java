@@ -7,7 +7,7 @@ import com.mariamkatamashvili.trainerwork.entity.Months;
 import com.mariamkatamashvili.trainerwork.entity.TrainersWork;
 import com.mariamkatamashvili.trainerwork.entity.Years;
 import com.mariamkatamashvili.trainerwork.mapper.Mapper;
-import com.mariamkatamashvili.trainerwork.repository.TrainersWorkRepository;
+import com.mariamkatamashvili.trainerwork.repository.WorkloadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -16,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -27,16 +26,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class TrainersWorkServiceImplTest {
+class WorkloadServiceImplTest {
 
     @Mock
-    private TrainersWorkRepository trainersWorkRepository;
+    private WorkloadRepository workloadRepository;
 
     @Mock
     private Mapper mapper;
 
     @InjectMocks
-    private TrainersWorkServiceImpl trainersWorkServiceImpl;
+    private WorkloadServiceImpl trainersWorkServiceImpl;
 
     @BeforeEach
     void setUp() {
@@ -47,15 +46,15 @@ class TrainersWorkServiceImplTest {
     void addWorkload_NewTrainer() {
         //given
         WorkloadDTO workloadDTO = new WorkloadDTO("john_doe", "John", "Doe", true, LocalDate.of(2023, 5, 20), 5, ActionType.ADD);
-        when(trainersWorkRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-        when(trainersWorkRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
         //when
         trainersWorkServiceImpl.addWorkload(workloadDTO);
 
         //then
-        verify(trainersWorkRepository, times(1)).findByUsername("john_doe");
-        verify(trainersWorkRepository, times(1)).save(any(TrainersWork.class));
+        verify(workloadRepository, times(1)).findByUsername("john_doe");
+        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
     }
 
     @Test
@@ -71,15 +70,15 @@ class TrainersWorkServiceImplTest {
         month.setWorkAmount(10);
         year.setMonths(Set.of(month));
         trainer.setYears(Set.of(year));
-        when(trainersWorkRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(trainersWorkRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
+        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
         //when
         trainersWorkServiceImpl.addWorkload(workloadDTO);
 
         //then
-        verify(trainersWorkRepository, times(1)).findByUsername("john_doe");
-        verify(trainersWorkRepository, times(1)).save(any(TrainersWork.class));
+        verify(workloadRepository, times(1)).findByUsername("john_doe");
+        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
         assertEquals(15, month.getWorkAmount());
     }
 
@@ -96,15 +95,15 @@ class TrainersWorkServiceImplTest {
         month.setWorkAmount(10);
         year.setMonths(Set.of(month));
         trainer.setYears(Set.of(year));
-        when(trainersWorkRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(trainersWorkRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
+        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
         //when
         trainersWorkServiceImpl.addWorkload(workloadDTO);
 
         //then
-        verify(trainersWorkRepository, times(1)).findByUsername("john_doe");
-        verify(trainersWorkRepository, times(1)).save(any(TrainersWork.class));
+        verify(workloadRepository, times(1)).findByUsername("john_doe");
+        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
         assertEquals(5, month.getWorkAmount());
     }
 
@@ -118,15 +117,15 @@ class TrainersWorkServiceImplTest {
         existingYear.setYear(2023);
         trainer.setYears(new HashSet<>(Set.of(existingYear)));
 
-        when(trainersWorkRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(trainersWorkRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
+        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
         //when
         trainersWorkServiceImpl.addWorkload(workloadDTO);
 
         //then
-        verify(trainersWorkRepository, times(1)).findByUsername("john_doe");
-        verify(trainersWorkRepository, times(1)).save(any(TrainersWork.class));
+        verify(workloadRepository, times(1)).findByUsername("john_doe");
+        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
         assertEquals(2, trainer.getYears().size());
         Years newYear = trainer.getYears().stream().filter(ys -> ys.getYear() == 2024).findFirst().orElse(null);
         assertEquals(10, newYear.getMonths().stream().filter(ms -> ms.getMonth() == Month.JANUARY).findFirst().orElse(new Months()).getWorkAmount());
@@ -137,14 +136,14 @@ class TrainersWorkServiceImplTest {
         //given
         TrainersWork trainer = new TrainersWork();
         WorkDTO workDTO = new WorkDTO("john_doe", "John", "Doe", true, Collections.emptySet());
-        when(trainersWorkRepository.findAll()).thenReturn(Collections.singletonList(trainer));
+        when(workloadRepository.findAll()).thenReturn(Collections.singletonList(trainer));
         when(mapper.workEntityToDto(trainer)).thenReturn(workDTO);
 
         //when
         List<WorkDTO> result = trainersWorkServiceImpl.findAll();
 
         //then
-        verify(trainersWorkRepository, times(1)).findAll();
+        verify(workloadRepository, times(1)).findAll();
         verify(mapper, times(1)).workEntityToDto(trainer);
         assertEquals(1, result.size());
         assertEquals(workDTO, result.get(0));

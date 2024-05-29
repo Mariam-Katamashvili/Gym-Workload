@@ -7,8 +7,8 @@ import com.mariamkatamashvili.trainerwork.entity.Months;
 import com.mariamkatamashvili.trainerwork.entity.TrainersWork;
 import com.mariamkatamashvili.trainerwork.entity.Years;
 import com.mariamkatamashvili.trainerwork.mapper.Mapper;
-import com.mariamkatamashvili.trainerwork.repository.TrainersWorkRepository;
-import com.mariamkatamashvili.trainerwork.service.TrainersWorkService;
+import com.mariamkatamashvili.trainerwork.repository.WorkloadRepository;
+import com.mariamkatamashvili.trainerwork.service.WorkloadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,13 +21,13 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TrainersWorkServiceImpl implements TrainersWorkService {
-    private final TrainersWorkRepository trainersWorkRepository;
+public class WorkloadServiceImpl implements WorkloadService {
+    private final WorkloadRepository workloadRepository;
     private final Mapper mapper;
 
     @Override
     public void addWorkload(WorkloadDTO workload) {
-        TrainersWork trainer = trainersWorkRepository.findByUsername(workload.getUsername())
+        TrainersWork trainer = workloadRepository.findByUsername(workload.getUsername())
                 .orElseGet(() -> createNewTrainer(workload));
 
         YearMonth yearMonth = YearMonth.from(workload.getDate());
@@ -43,12 +43,12 @@ public class TrainersWorkServiceImpl implements TrainersWorkService {
 
         updateMonthlyWorkAmount(monthlySummary, workload);
 
-        trainersWorkRepository.save(trainer);
+        workloadRepository.save(trainer);
     }
 
     @Override
     public List<WorkDTO> findAll() {
-        return trainersWorkRepository.findAll().stream()
+        return workloadRepository.findAll().stream()
                 .map(mapper::workEntityToDto)
                 .toList();
     }

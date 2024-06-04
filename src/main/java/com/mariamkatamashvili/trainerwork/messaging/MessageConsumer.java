@@ -2,6 +2,7 @@ package com.mariamkatamashvili.trainerwork.messaging;
 
 import com.mariamkatamashvili.trainerwork.dto.WorkloadDTO;
 import com.mariamkatamashvili.trainerwork.exception.WorkloadException;
+import com.mariamkatamashvili.trainerwork.security.AuthValidator;
 import com.mariamkatamashvili.trainerwork.security.JwtTokenProvider;
 import com.mariamkatamashvili.trainerwork.service.WorkloadService;
 import jakarta.jms.Message;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class MessageConsumer {
     private final WorkloadService workloadService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthValidator authValidator;
 
     @JmsListener(destination = "${messaging.jms.destination.main}")
     public void receiveWorkload(WorkloadDTO workload, Message message) {
@@ -23,19 +25,10 @@ public class MessageConsumer {
     public void extractAndValidateToken(WorkloadDTO workload, Message message) {
         try {
             String token = message.getStringProperty("Authorization");
-            if (token != null && token.startsWith("Bearer ")) {
-                token = token.substring(7);
-                if (jwtTokenProvider.isTokenValid(token)) {
-                    workloadService.addWorkload(workload);
-                } else {
-                    throw new WorkloadException("Invalid JWT token", "401");
-                }
-            } else {
-                throw new WorkloadException("JWT token missing or invalid", "401");
-            }
+            authValidator.validate(token);
+            workloadService.addWorkload(workload);
         } catch (Exception e) {
             throw new WorkloadException("Error processing message", "500");
         }
     }
 }
-

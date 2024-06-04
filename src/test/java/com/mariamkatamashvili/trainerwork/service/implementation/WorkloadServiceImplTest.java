@@ -27,6 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class WorkloadServiceImplTest {
+    private static final String FULL_NAME = "john_doe";
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Doe";
+    private static final boolean STATUS = true;
 
     @Mock
     private WorkloadRepository workloadRepository;
@@ -45,7 +49,7 @@ class WorkloadServiceImplTest {
     @Test
     void addWorkload_NewTrainer() {
         //given
-        WorkloadDTO workloadDTO = new WorkloadDTO("john_doe", "John", "Doe", true, LocalDate.of(2023, 5, 20), 5, ActionType.ADD);
+        WorkloadDTO workloadDTO = new WorkloadDTO(FULL_NAME, FIRST_NAME, LAST_NAME, true, LocalDate.of(2023, 5, 20), 5, ActionType.ADD);
         when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.empty());
         when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -53,7 +57,7 @@ class WorkloadServiceImplTest {
         trainersWorkServiceImpl.addWorkload(workloadDTO);
 
         //then
-        verify(workloadRepository, times(1)).findByUsername("john_doe");
+        verify(workloadRepository, times(1)).findByUsername(FULL_NAME);
         verify(workloadRepository, times(1)).save(any(TrainersWork.class));
     }
 

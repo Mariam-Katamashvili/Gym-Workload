@@ -1,7 +1,6 @@
 package com.mariamkatamashvili.trainerwork.controller;
 
 import com.mariamkatamashvili.trainerwork.dto.WorkDTO;
-import com.mariamkatamashvili.trainerwork.dto.WorkloadDTO;
 import com.mariamkatamashvili.trainerwork.service.WorkloadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,8 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,20 +22,6 @@ import java.util.List;
 @Tag(name = "Workload API", description = "Operations related to calculating and retrieving trainer working hours")
 public class WorkloadController {
     private final WorkloadService workloadService;
-
-    @Operation(summary = "Add workload to a trainer")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Workload added successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    })
-    @PostMapping("/workload")
-    public ResponseEntity<Void> workload(
-            @RequestBody WorkloadDTO workload
-    ) {
-        workloadService.addWorkload(workload);
-        return ResponseEntity.ok().build();
-    }
 
     @Operation(summary = "Get all workloads")
     @ApiResponses(value = {

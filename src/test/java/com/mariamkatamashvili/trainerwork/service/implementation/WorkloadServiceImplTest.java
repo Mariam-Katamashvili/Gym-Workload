@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +73,8 @@ class WorkloadServiceImplTest {
         Months month = new Months();
         month.setMonth(Month.MAY);
         month.setWorkAmount(10);
-        year.setMonths(Set.of(month));
-        trainer.setYears(Set.of(year));
+        year.setMonths(List.of(month));
+        trainer.setYears(List.of(year));
         when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
         when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -97,8 +98,8 @@ class WorkloadServiceImplTest {
         Months month = new Months();
         month.setMonth(Month.MAY);
         month.setWorkAmount(10);
-        year.setMonths(Set.of(month));
-        trainer.setYears(Set.of(year));
+        year.setMonths(List.of(month));
+        trainer.setYears(List.of(year));
         when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
         when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
 
@@ -119,7 +120,7 @@ class WorkloadServiceImplTest {
         trainer.setUsername("john_doe");
         Years existingYear = new Years();
         existingYear.setYear(2023);
-        trainer.setYears(new HashSet<>(Set.of(existingYear)));
+        trainer.setYears(new ArrayList<>(Set.of(existingYear)));
 
         when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
         when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);

@@ -1,156 +1,142 @@
-package com.mariamkatamashvili.trainerwork.service.implementation;
+package com.mariamkatamashvili.trainerwork.steps;
 
 import com.mariamkatamashvili.trainerwork.dto.ActionType;
-import com.mariamkatamashvili.trainerwork.dto.WorkDTO;
 import com.mariamkatamashvili.trainerwork.dto.WorkloadDTO;
 import com.mariamkatamashvili.trainerwork.entity.Months;
 import com.mariamkatamashvili.trainerwork.entity.TrainersWork;
 import com.mariamkatamashvili.trainerwork.entity.Years;
-import com.mariamkatamashvili.trainerwork.mapper.Mapper;
 import com.mariamkatamashvili.trainerwork.repository.WorkloadRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import com.mariamkatamashvili.trainerwork.security.JwtTokenProvider;
+import com.mariamkatamashvili.trainerwork.service.WorkloadService;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.cucumber.spring.CucumberContextConfiguration;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+@SpringBootTest
+@CucumberContextConfiguration
+public class WorkloadServiceImplTest {
+    @Autowired
+    private WorkloadService workloadService;
 
-class WorkloadServiceImplTest {
-    private static final String FULL_NAME = "john_doe";
-    private static final String FIRST_NAME = "John";
-    private static final String LAST_NAME = "Doe";
-    private static final boolean STATUS = true;
-
-    @Mock
+    @Autowired
     private WorkloadRepository workloadRepository;
 
-    @Mock
-    private Mapper mapper;
-
-    @InjectMocks
-    private WorkloadServiceImpl trainersWorkServiceImpl;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @Before
+    public void cleanDatabase() {
+        workloadRepository.deleteAll();
     }
 
-    @Test
-    void addWorkload_NewTrainer() {
-        //given
-        WorkloadDTO workloadDTO = new WorkloadDTO(FULL_NAME, FIRST_NAME, LAST_NAME, true, LocalDate.of(2023, 5, 20), 5, ActionType.ADD);
-        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.empty());
-        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        //when
-        trainersWorkServiceImpl.addWorkload(workloadDTO);
-
-        //then
-        verify(workloadRepository, times(1)).findByUsername(FULL_NAME);
-        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
-    }
-
-    @Test
-    void addWorkload_ExistingTrainer() {
-        //given
-        WorkloadDTO workloadDTO = new WorkloadDTO("john_doe", "John", "Doe", true, LocalDate.of(2023, 5, 20), 5, ActionType.ADD);
+    @Given("the database contains a trainer with username {string} and the following yearly summaries:")
+    public void givenTheDatabaseContainsATrainerWithUsernameAndTheFollowingYearlySummaries(
+            String username,
+            DataTable dataTable
+    ) {
         TrainersWork trainer = new TrainersWork();
-        trainer.setUsername("john_doe");
-        Years year = new Years();
-        year.setYear(2023);
-        Months month = new Months();
-        month.setMonth(Month.MAY);
-        month.setWorkAmount(10);
-        year.setMonths(List.of(month));
-        trainer.setYears(List.of(year));
-        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
+        trainer.setUsername(username);
+        trainer.setYears(new ArrayList<>());
 
-        //when
-        trainersWorkServiceImpl.addWorkload(workloadDTO);
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> columns : rows) {
+            int year = Integer.parseInt(columns.get("year"));
+            Month month = Month.valueOf(columns.get("month"));
+            int workAmount = Integer.parseInt(columns.get("workAmount"));
 
-        //then
-        verify(workloadRepository, times(1)).findByUsername("john_doe");
-        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
-        assertEquals(15, month.getWorkAmount());
+            Years yearlySummary = trainer.getYears().stream()
+                    .filter(ys -> ys.getYear() == year)
+                    .findFirst()
+                    .orElseGet(() -> {
+                        Years ys = new Years();
+                        ys.setYear(year);
+                        ys.setMonths(new ArrayList<>());
+                        trainer.getYears().add(ys);
+                        return ys;
+                    });
+
+            Months monthlySummary = new Months();
+            monthlySummary.setMonth(month);
+            monthlySummary.setWorkAmount(workAmount);
+            yearlySummary.getMonths().add(monthlySummary);
+        }
+
+        workloadRepository.save(trainer);
     }
 
-    @Test
-    void addWorkload_ExistingTrainer_DeleteWorkload() {
-        //given
-        WorkloadDTO workloadDTO = new WorkloadDTO("john_doe", "John", "Doe", true, LocalDate.of(2023, 5, 20), 5, ActionType.DELETE);
-        TrainersWork trainer = new TrainersWork();
-        trainer.setUsername("john_doe");
-        Years year = new Years();
-        year.setYear(2023);
-        Months month = new Months();
-        month.setMonth(Month.MAY);
-        month.setWorkAmount(10);
-        year.setMonths(List.of(month));
-        trainer.setYears(List.of(year));
-        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        //when
-        trainersWorkServiceImpl.addWorkload(workloadDTO);
-
-        //then
-        verify(workloadRepository, times(1)).findByUsername("john_doe");
-        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
-        assertEquals(5, month.getWorkAmount());
+    @Given("the database does not contain a trainer with username {string}")
+    public void givenTheDatabaseDoesNotContainATrainerWithUsername(String username) {
+        workloadRepository.deleteAll();
     }
 
-    @Test
-    void addWorkload_ExistingTrainer_CreateNewYear() {
-        //given
-        WorkloadDTO workloadDTO = new WorkloadDTO("john_doe", "John", "Doe", true, LocalDate.of(2024, 1, 15), 10, ActionType.ADD);
-        TrainersWork trainer = new TrainersWork();
-        trainer.setUsername("john_doe");
-        Years existingYear = new Years();
-        existingYear.setYear(2023);
-        trainer.setYears(new ArrayList<>(Set.of(existingYear)));
+    @When("the workload is added with the following details:")
+    public void whenTheWorkloadIsAddedWithTheFollowingDetails(DataTable dataTable) {
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> columns : rows) {
+            WorkloadDTO request = WorkloadDTO.builder()
+                    .username(columns.get("username"))
+                    .date(LocalDate.parse(columns.get("date")))
+                    .duration(Integer.parseInt(columns.get("duration")))
+                    .actionType(ActionType.valueOf(columns.get("actionType")))
+                    .build();
 
-        when(workloadRepository.findByUsername(anyString())).thenReturn(Optional.of(trainer));
-        when(workloadRepository.save(any(TrainersWork.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        //when
-        trainersWorkServiceImpl.addWorkload(workloadDTO);
-
-        //then
-        verify(workloadRepository, times(1)).findByUsername("john_doe");
-        verify(workloadRepository, times(1)).save(any(TrainersWork.class));
-        assertEquals(2, trainer.getYears().size());
-        Years newYear = trainer.getYears().stream().filter(ys -> ys.getYear() == 2024).findFirst().orElse(null);
-        assertEquals(10, newYear.getMonths().stream().filter(ms -> ms.getMonth() == Month.JANUARY).findFirst().orElse(new Months()).getWorkAmount());
+            workloadService.addWorkload(request);
+        }
     }
 
-    @Test
-    void findAll() {
-        //given
-        TrainersWork trainer = new TrainersWork();
-        WorkDTO workDTO = new WorkDTO("john_doe", "John", "Doe", true, Collections.emptySet());
-        when(workloadRepository.findAll()).thenReturn(Collections.singletonList(trainer));
-        when(mapper.workEntityToDto(trainer)).thenReturn(workDTO);
+    @When("the workload is deleted with the following details:")
+    public void whenTheWorkloadIsDeletedWithTheFollowingDetails(DataTable dataTable) {
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        for (Map<String, String> columns : rows) {
+            WorkloadDTO request = WorkloadDTO.builder()
+                    .username(columns.get("username"))
+                    .date(LocalDate.parse(columns.get("date")))
+                    .duration(Integer.parseInt(columns.get("duration")))
+                    .actionType(ActionType.valueOf(columns.get("actionType")))
+                    .build();
+            workloadService.addWorkload(request);
+        }
+    }
 
-        //when
-        List<WorkDTO> result = trainersWorkServiceImpl.findAll();
+    @Then("the trainer's monthly summary for JANUARY {int} should be updated to {int}")
+    public void thenTheTrainersMonthlySummaryShouldBeUpdated(int year, int expectedWorkAmount) {
+        TrainersWork trainer = workloadRepository.findByUsername("john_doe").orElseThrow();
+        Years yearlySummary = trainer.getYears().stream()
+                .filter(ys -> ys.getYear() == year)
+                .findFirst()
+                .orElseThrow();
 
-        //then
-        verify(workloadRepository, times(1)).findAll();
-        verify(mapper, times(1)).workEntityToDto(trainer);
-        assertEquals(1, result.size());
-        assertEquals(workDTO, result.get(0));
+        Months monthlySummary = yearlySummary.getMonths().stream()
+                .filter(ms -> ms.getMonth() == Month.JANUARY)
+                .findFirst()
+                .orElseThrow();
+
+        Assertions.assertEquals(expectedWorkAmount, monthlySummary.getWorkAmount());
+    }
+
+    @Then("a new trainer should be created with username {string} and the monthly summary for JANUARY {int} should be {int}")
+    public void thenANewTrainerShouldBeCreatedWithUsernameAndTheMonthlySummaryForJANUARYShouldBe(String username, int year, int expectedWorkAmount) {
+        TrainersWork trainer = workloadRepository.findByUsername(username).orElseThrow();
+        Years yearlySummary = trainer.getYears().stream()
+                .filter(ys -> ys.getYear() == year)
+                .findFirst()
+                .orElseThrow();
+
+        Months monthlySummary = yearlySummary.getMonths().stream()
+                .filter(ms -> ms.getMonth() == Month.JANUARY)
+                .findFirst()
+                .orElseThrow();
+
+        Assertions.assertEquals(expectedWorkAmount, monthlySummary.getWorkAmount());
     }
 }

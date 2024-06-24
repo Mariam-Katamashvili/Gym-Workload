@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Month;
 import java.time.YearMonth;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -59,15 +59,14 @@ public class WorkloadServiceImpl implements WorkloadService {
         trainer.setFirstName(workload.getFirstName());
         trainer.setLastName(workload.getLastName());
         trainer.setStatus(workload.getIsActive());
-        trainer.setYears(new HashSet<>());
+        trainer.setYears(new ArrayList<>());
         return trainer;
     }
 
     private Years createNewYear(TrainersWork trainer, int year) {
         Years newYear = new Years();
         newYear.setYear(year);
-        newYear.setTrainersWork(trainer);
-        newYear.setMonths(new HashSet<>());
+        newYear.setMonths(new ArrayList<>());
         trainer.getYears().add(newYear);
         return newYear;
     }
@@ -75,7 +74,6 @@ public class WorkloadServiceImpl implements WorkloadService {
     private Months createNewMonth(Years yearlySummary, Month month) {
         Months newMonth = new Months();
         newMonth.setMonth(month);
-        newMonth.setYears(yearlySummary);
         yearlySummary.getMonths().add(newMonth);
         return newMonth;
     }

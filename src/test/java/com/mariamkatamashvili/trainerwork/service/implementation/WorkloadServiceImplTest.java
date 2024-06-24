@@ -1,4 +1,4 @@
-package com.mariamkatamashvili.trainerwork.steps;
+package com.mariamkatamashvili.trainerwork.service.implementation;
 
 import com.mariamkatamashvili.trainerwork.dto.ActionType;
 import com.mariamkatamashvili.trainerwork.dto.WorkloadDTO;

@@ -2,6 +2,7 @@ package com.mariamkatamashvili.trainerwork.controller;
 
 import com.mariamkatamashvili.trainerwork.exception.AuthenticationException;
 import com.mariamkatamashvili.trainerwork.exception.WorkloadException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,6 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
     }
 }
